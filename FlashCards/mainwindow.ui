@@ -6,12 +6,30 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>790</width>
-    <height>587</height>
+    <width>780</width>
+    <height>580</height>
    </rect>
   </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>780</width>
+    <height>580</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>780</width>
+    <height>580</height>
+   </size>
+  </property>
   <property name="windowTitle">
-   <string>Fiszki @ 2020</string>
+   <string>FlashCards @ 2020</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QPushButton" name="pushButtonStart">
@@ -82,9 +100,9 @@
     <property name="geometry">
      <rect>
       <x>550</x>
-      <y>60</y>
+      <y>50</y>
       <width>211</width>
-      <height>421</height>
+      <height>441</height>
      </rect>
     </property>
     <property name="title">
@@ -128,7 +146,7 @@
       <enum>Qt::LeftToRight</enum>
      </property>
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Hasło&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Term&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
     </widget>
     <widget class="QLabel" name="labelAddNewTerm">
@@ -147,7 +165,7 @@
       </font>
      </property>
      <property name="text">
-      <string>Dodaj nowe hasło</string>
+      <string>Add new term</string>
      </property>
     </widget>
     <widget class="QLabel" name="labelDefinition">
@@ -166,7 +184,7 @@
       </font>
      </property>
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Odpowiedź&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Definiton&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
     </widget>
     <widget class="QLineEdit" name="lineEditInputTerm">
@@ -209,7 +227,7 @@
       </font>
      </property>
      <property name="text">
-      <string>Dodaj</string>
+      <string>Add</string>
      </property>
     </widget>
    </widget>
@@ -223,7 +241,7 @@
      </rect>
     </property>
     <property name="title">
-     <string>Podsumowanie</string>
+     <string>Summary</string>
     </property>
     <widget class="QWidget" name="layoutWidget">
      <property name="geometry">
@@ -247,7 +265,7 @@
          </font>
         </property>
         <property name="text">
-         <string>Twoja odpowiedź: </string>
+         <string>Your answer:</string>
         </property>
        </widget>
       </item>
@@ -291,7 +309,7 @@
          </font>
         </property>
         <property name="text">
-         <string>Poprawna odpowiedź:</string>
+         <string>Correct answer:</string>
         </property>
        </widget>
       </item>
@@ -324,19 +342,6 @@
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout_5">
       <item>
-       <widget class="QLabel" name="UsersGrade">
-        <property name="font">
-         <font>
-          <family>Arial</family>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Twoja ocena:</string>
-        </property>
-       </widget>
-      </item>
-      <item>
        <widget class="QLabel" name="labelUsersGrade">
         <property name="font">
          <font>
@@ -349,6 +354,9 @@
         </property>
         <property name="text">
          <string>TextLabel</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
        </widget>
       </item>
@@ -371,7 +379,7 @@
      </font>
     </property>
     <property name="text">
-     <string>Dalej</string>
+     <string>Next</string>
     </property>
    </widget>
    <widget class="Line" name="line_3">
@@ -397,7 +405,7 @@
      </rect>
     </property>
     <property name="title">
-     <string>Wpisz odpowiedź</string>
+     <string>Type an answer</string>
     </property>
     <widget class="QWidget" name="layoutWidget">
      <property name="geometry">
@@ -434,7 +442,7 @@
          </font>
         </property>
         <property name="text">
-         <string>Pokaż odpowiedź</string>
+         <string>Show answer</string>
         </property>
        </widget>
       </item>
@@ -447,13 +455,13 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>790</width>
+     <width>780</width>
      <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuPlik">
     <property name="title">
-     <string>Plik</string>
+     <string>File</string>
     </property>
     <addaction name="actionOpenDatabase"/>
     <addaction name="actionAddNewDatabase"/>
@@ -463,7 +471,7 @@
    </widget>
    <widget class="QMenu" name="menuEdycja">
     <property name="title">
-     <string>Edycja</string>
+     <string>Edit</string>
     </property>
     <addaction name="actionDeleteTerm"/>
    </widget>
@@ -493,7 +501,10 @@
      <normaloff>:/images/close.png</normaloff>:/images/close.png</iconset>
    </property>
    <property name="text">
-    <string>Zakończ</string>
+    <string>Exit</string>
+   </property>
+   <property name="toolTip">
+    <string>Exit</string>
    </property>
   </action>
   <action name="actionOpenDatabase">
@@ -502,7 +513,10 @@
      <normaloff>:/images/open.png</normaloff>:/images/open.png</iconset>
    </property>
    <property name="text">
-    <string>Otwórz istniejącą bazę</string>
+    <string>Open an existing database</string>
+   </property>
+   <property name="toolTip">
+    <string>Open an existing database</string>
    </property>
   </action>
   <action name="actionAddNewDatabase">
@@ -511,7 +525,10 @@
      <normaloff>:/images/new.png</normaloff>:/images/new.png</iconset>
    </property>
    <property name="text">
-    <string>Dodaj nową bazę</string>
+    <string>Add new database</string>
+   </property>
+   <property name="toolTip">
+    <string>Add new database</string>
    </property>
   </action>
   <action name="actionDeleteTerm">
@@ -520,7 +537,10 @@
      <normaloff>:/images/trash.png</normaloff>:/images/trash.png</iconset>
    </property>
    <property name="text">
-    <string>Usuń hasło</string>
+    <string>Delete term</string>
+   </property>
+   <property name="toolTip">
+    <string>Delete term</string>
    </property>
   </action>
   <action name="toolBarDeleteTerm">
@@ -529,7 +549,10 @@
      <normaloff>:/images/trash.png</normaloff>:/images/trash.png</iconset>
    </property>
    <property name="text">
-    <string>Usuń hasło</string>
+    <string>Delete term</string>
+   </property>
+   <property name="toolTip">
+    <string>Delete term</string>
    </property>
   </action>
   <action name="toolBarAddNewDatabase">
@@ -538,7 +561,10 @@
      <normaloff>:/images/new.png</normaloff>:/images/new.png</iconset>
    </property>
    <property name="text">
-    <string>Dodaj nową bazę</string>
+    <string>Add new database</string>
+   </property>
+   <property name="toolTip">
+    <string>Add new database</string>
    </property>
   </action>
   <action name="toolBarOpenDatabase">
@@ -547,7 +573,10 @@
      <normaloff>:/images/open.png</normaloff>:/images/open.png</iconset>
    </property>
    <property name="text">
-    <string>Otwórz istniejącą bazę</string>
+    <string>Open an existing database</string>
+   </property>
+   <property name="toolTip">
+    <string>Open an existing database</string>
    </property>
   </action>
   <action name="actionSaveDatabase">
@@ -556,7 +585,10 @@
      <normaloff>:/images/save.png</normaloff>:/images/save.png</iconset>
    </property>
    <property name="text">
-    <string>Zapisz bazę</string>
+    <string>Save database</string>
+   </property>
+   <property name="toolTip">
+    <string>Save database</string>
    </property>
   </action>
   <action name="toolBarSaveDatabase">
@@ -565,7 +597,10 @@
      <normaloff>:/images/save.png</normaloff>:/images/save.png</iconset>
    </property>
    <property name="text">
-    <string>Zapisz bazę</string>
+    <string>Save database</string>
+   </property>
+   <property name="toolTip">
+    <string>Save database</string>
    </property>
   </action>
   <action name="actionSaveSession">
@@ -574,7 +609,10 @@
      <normaloff>:/images/session.png</normaloff>:/images/session.png</iconset>
    </property>
    <property name="text">
-    <string>Zapisz sesję</string>
+    <string>Save session</string>
+   </property>
+   <property name="toolTip">
+    <string>Save session</string>
    </property>
   </action>
   <action name="toolBarSaveSession">
@@ -583,7 +621,10 @@
      <normaloff>:/images/session.png</normaloff>:/images/session.png</iconset>
    </property>
    <property name="text">
-    <string>Zapisz sesję</string>
+    <string>Save session</string>
+   </property>
+   <property name="toolTip">
+    <string>Save session</string>
    </property>
   </action>
  </widget>
