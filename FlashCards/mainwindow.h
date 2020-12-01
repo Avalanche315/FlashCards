@@ -25,7 +25,6 @@ public:
 public slots:
     void readFile(std::list<Card>& list, QString fileName);
 
-
 private slots:
     void on_actionOpenDatabase_triggered();
 
