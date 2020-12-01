@@ -8,6 +8,7 @@
 #include <list>
 #include <QDebug>
 #include <QFile>
+#include <QFileInfo>
 #include <QDir>
 #include <QFileDialog>
 #include <QMessageBox>
@@ -22,19 +23,23 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    QFile sessionFile("session.txt");
-    if(sessionFile.exists()) {
-        int ret = QMessageBox::information(this, "Wykryto zapisaną sesję", "Czy chcesz załadować ostatnio zapisaną sesję?", QMessageBox::No, QMessageBox::Yes);
+    QString sessionFile("../FlashCards/Data/session.txt");
+    if(QFileInfo::exists(sessionFile)) {
+        int ret = QMessageBox::information(this, "A saved session has been detected", "Do you want to load the last saved session?", QMessageBox::No, QMessageBox::Yes);
         if (ret == QMessageBox::Yes) {
             loadSession();
         }
         else {
-            filePath = "PLtoENG.txt";
+            // removing session file
+            QFile sFile(sessionFile);
+            sFile.remove();
+            // establish default database
+            filePath = "../FlashCards/Data/PLtoENG.txt";
             readFile(cardList, filePath);
         }
     }
     else {
-        filePath = "PLtoENG.txt";
+        filePath = "../FlashCards/Data/PLtoENG.txt";
         readFile(cardList, filePath);
     }
     ui->labelShowTerm->setText("");
@@ -47,20 +52,12 @@ MainWindow::MainWindow(QWidget *parent)
 
 void MainWindow::showStatusBar()
 {
-    ui->statusbar->showMessage("Liczba zwrotów w bazie: " + QString::number(cardList.size()));
+    ui->statusbar->showMessage("Total flashcards: " + QString::number(cardList.size()));
 }
 
 Card MainWindow::returnCurrentItem()
 {
-  int counter = 0;
-  for (auto it : cardList) {
-     if(counter == index) {
-        return it;
-     }
-     else {
-        counter++;
-     }
-  }
+  return cardList[index];
 }
 
 int MainWindow::getIndex()
@@ -69,35 +66,27 @@ int MainWindow::getIndex()
 }
 
 void MainWindow::readFile(std::vector<Card>& list, QString filePath) {
-    // Tworzymy domyślną bazę słówek
-    // Uwaga: format rekordów w pliku to:
-    // Haslo
-    // Odpowiedz
-    // Liczba punktów - początkowo 0
-    // Pliki powinny znajdować się w katalogu debug.
-
     list.clear();
 
     index = 0;
 
-    QFile* file = new QFile(filePath);
+    QFile file{filePath};
 
-    if (!file->open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qDebug() << "Blad podczas ladowania pliku: " << file->errorString();
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qDebug() << "Error with loading the file: " << file.errorString();
         return;
     }
 
-    while (!file->atEnd()) {
-        std::string term = file->readLine().toStdString();
+    while (!file.atEnd()) {
+        std::string term = file.readLine().toStdString();
         removeWhiteSpace(term);
-        std::string def = file->readLine().toStdString();
+        std::string def = file.readLine().toStdString();
         removeWhiteSpace(def);
-        long long int points = file->readLine().toInt();
+        long long int points = 0;
         list.push_back(Card(term, def, points));
     }
 
-    file->close();
-    delete file;
+    file.close();
 
     this->showStatusBar();
     if(cardList.size() == 0) {
@@ -113,25 +102,25 @@ MainWindow::~MainWindow()
 void MainWindow::on_actionOpenDatabase_triggered()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
-        tr("Otwórz bazę danych"), "C:", tr("Pliki tekstowe (*.txt)"));
-    filePath = fileName;
-
-    readFile(cardList, fileName);
-    ui->labelShowTerm->hide();
-    ui->groupBoxInput->hide();
-    ui->groupBoxSummary->hide();
-    ui->pushButtonStart->setDisabled(false);
-    ui->pushButtonStartOver->setDisabled(true);
+        tr("Browse file"), "../FlashCards/Data", tr("Text files (*.txt)"));
+    if(fileName != "") {
+        filePath = fileName;
+        readFile(cardList, fileName);
+        ui->labelShowTerm->hide();
+        ui->groupBoxInput->hide();
+        ui->groupBoxSummary->hide();
+        ui->pushButtonStart->setDisabled(false);
+        ui->pushButtonStartOver->setDisabled(true);
+    }
 }
-
 
 void MainWindow::on_pushButtonAddNewTerm_clicked()
 {
-    std::string* tempTerm = new std::string;
-    *tempTerm = ui->lineEditInputTerm->text().toStdString();
-    std::string* tempDef = new std::string;
-    *tempDef = ui->lineEditInputDefinition->text().toStdString();
-    cardList.push_back(Card(*tempTerm, *tempDef, 0));
+    std::string term{};
+    term = ui->lineEditInputTerm->text().toStdString();
+    std::string def{};
+    def = ui->lineEditInputDefinition->text().toStdString();
+    cardList.push_back(Card(term, def, 0));
     this->showStatusBar();
     ui->lineEditInputTerm->clear();
     ui->lineEditInputDefinition->clear();
@@ -139,10 +128,7 @@ void MainWindow::on_pushButtonAddNewTerm_clicked()
         ui->pushButtonStart->setDisabled(false);
     }
     ui->pushButtonAddNewTerm->setDisabled(true);
-    delete tempTerm;
-    delete tempDef;
 }
-
 
 void MainWindow::on_toolBarOpenDatabase_triggered()
 {
@@ -165,17 +151,14 @@ void MainWindow::on_pushButtonShowAnswer_clicked()
 
 void MainWindow::showSummary()
 {
-    Card* currentCard = new Card(returnCurrentItem());
-    QString* answer = new QString(ui->lineEditInputAnswer->text());
-    QString* correctAnswer = new QString(QString::fromStdString(currentCard->getDef()));
+    Card currentCard = returnCurrentItem();
+    QString answer = QString(ui->lineEditInputAnswer->text());
+    QString correctAnswer = QString(QString::fromStdString(currentCard.getDef()));
     ui->groupBoxSummary->show();
     ui->pushButtonNext->show();
-    ui->labelUserAnswer->setText(*answer);
-    ui->labelCorrectMessage->setText(*correctAnswer);
-    ui->labelUsersGrade->setText(QString::number(checkGrade(*answer)));
-    delete currentCard;
-    delete answer;
-    delete correctAnswer;
+    ui->labelUserAnswer->setText(answer);
+    ui->labelCorrectMessage->setText(correctAnswer);
+    ui->labelUsersGrade->setText(QString::number(checkGrade(answer)));
 }
 
 void MainWindow::on_lineEditInputTerm_textEdited()
@@ -198,15 +181,17 @@ void MainWindow::on_lineEditInputDefinition_textEdited()
     }
 }
 
-// Dodatkowe funkcje
-
 void removeWhiteSpace(std::string& w) {
-    w.replace(w.end() - 1, w.end(), "");
+    if(w.size() != 0) {
+        w.replace(w.end() - 1, w.end(), "");
+    }
 }
 
 void MainWindow::on_pushButtonStart_clicked()
 {
-    QString* term = new QString();
+    QString term{};
+    term = QString::fromStdString(returnCurrentItem().getTerm());
+    ui->labelShowTerm->setText(term);
     ui->pushButtonStart->setDisabled(true);
     ui->lineEditInputAnswer->clear();
     ui->lineEditInputAnswer->setDisabled(false);
@@ -215,10 +200,7 @@ void MainWindow::on_pushButtonStart_clicked()
     ui->labelShowTerm->show();
     ui->groupBoxInput->show();
     ui->pushButtonStartOver->setDisabled(false);
-    *term = QString::fromStdString(returnCurrentItem().getTerm());
-    ui->labelShowTerm->setText(*term);
     this->showStatusBar();
-    delete term;
 }
 
 void MainWindow::on_pushButtonNext_clicked()
@@ -248,7 +230,6 @@ void MainWindow::on_pushButtonStartOver_clicked()
     ui->lineEditInputAnswer->clear();
     ui->lineEditInputAnswer->setDisabled(false);
     ui->pushButtonShowAnswer->setDisabled(false);
-
 }
 
 void MainWindow::on_actionExit_triggered()
@@ -258,42 +239,31 @@ void MainWindow::on_actionExit_triggered()
 
 void MainWindow::on_actionAddNewDatabase_triggered()
 {
-    QString path = QInputDialog::getText(this,"Utwórz nową bazę danych", "Podaj ścieżkę absolutną lub nazwę pliku");
-    QFile* file = new QFile(path);
+    QString path = QInputDialog::getText(this, "Create new data base", "Input flashcards database name");
+    path = "../FlashCards/Data/" + path + ".txt";
+    QFile file{path};
 
-    if(file->open(QIODevice::WriteOnly | QIODevice::Text)){
-        QTextStream out(file);
+    if(file.open(QIODevice::WriteOnly | QIODevice::Text)){
+        QTextStream out(&file);
         out << "";
-        file->close();
+        file.close();
     }
     filePath = path;
     readFile(cardList, filePath);
-    delete file;
 }
 
 void MainWindow::on_actionSaveDatabase_triggered()
 {
-    QFile* file = new QFile(filePath);
-    if(file->open(QIODevice::WriteOnly | QIODevice::Text)){ // metoda open w otwiera plik w trybie tylko do odczytu z zamianą znaków \r\n ma \n
-        QTextStream out(file);
-        QString* term = new QString();
-        QString* def = new QString();
-        int* points = new int();
-
+    QFile file{filePath};
+    if(file.open(QIODevice::WriteOnly | QIODevice::Text)){
+        QTextStream out(&file);
         for(auto& it : cardList) {
-            *term = QString::fromStdString(it.getTerm());
-            *def = QString::fromStdString(it.getDef());
-            *points = it.getPoints();
-            out << *term << "\n" << *def << "\n" << *points << "\n";
+            QString term = QString::fromStdString(it.getTerm());
+            QString def = QString::fromStdString(it.getDef());
+            out << term << "\n" << def << "\n";
         }
-
-        file->close();
-
-        delete term;
-        delete def;
-        delete points;
+        file.close();
     }
-    delete file;
 }
 
 void MainWindow::on_toolBarSaveDatabase_triggered()
@@ -303,18 +273,9 @@ void MainWindow::on_toolBarSaveDatabase_triggered()
 
 void MainWindow::on_actionDeleteTerm_triggered()
 {
-    int counter = 0;
-    int index = int(getIndex());
-    for(auto it = cardList.begin(); it != cardList.end(); it++) {
-        if(index == counter) {
-            cardList.erase(it);
-            index++;
-            break;
-        }
-        else counter++;
-    }
-    index = 0;
-    on_actionSaveDatabase_triggered();
+    auto index = cardList.begin() + getIndex();
+    cardList.erase(index);
+    index += 1;
     on_pushButtonStart_clicked();
 }
 
@@ -324,22 +285,21 @@ void MainWindow::on_toolBarDeleteTerm_triggered()
 }
 
 void MainWindow::loadSession() {
-    QFile* file = new QFile("session.txt");
+    QFile file{"../FlashCards/Data/session.txt"};
 
-    if (!file->open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qDebug() << "Blad podczas ladowania pliku: " << file->errorString();
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qDebug() << "Error with loading the file: " << file.errorString();
         return;
     }
     else {
-        std::string fileName = file->readLine().toStdString();
+        std::string fileName = file.readLine().toStdString();
         removeWhiteSpace(fileName);
         filePath = QString::fromStdString(fileName);
         QString name = QString::fromStdString(fileName);
         readFile(cardList, name);
-        index = file->readLine().toInt();
+        index = file.readLine().toInt();
     }
-    file->close();
-    delete file;
+    file.close();
 }
 
 int MainWindow::checkGrade(QString answ)
@@ -388,14 +348,13 @@ int MainWindow::checkGrade(QString answ)
 
 };
 
-
 void MainWindow::on_actionSaveSession_triggered()
 {
-    QFile* file = new QFile("session.txt");
-    if(file->open(QIODevice::WriteOnly | QIODevice::Text)){
-        QTextStream out(file);
+    QFile file{"../FlashCards/Data/session.txt"};
+    if(file.open(QIODevice::WriteOnly | QIODevice::Text)){
+        QTextStream out(&file);
         out << filePath << "\n" << index << "\n";
-        file->close();
+        file.close();
     }
 }
 

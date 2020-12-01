@@ -1,5 +1,4 @@
-#ifndef CARD_H
-#define CARD_H
+#pragma once
 
 #include <string>
 
@@ -16,5 +15,3 @@ class Card {
     std::string def;
     int points;
 };
-
-#endif // CARD_H

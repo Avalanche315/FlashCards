@@ -1,5 +1,4 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#pragma once
 
 #include <QMainWindow>
 #include "Card.h"
@@ -68,4 +67,3 @@ private:
     QString filePath;
     int index;
 };
-#endif // MAINWINDOW_H
