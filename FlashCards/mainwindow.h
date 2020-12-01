@@ -23,7 +23,7 @@ public:
     ~MainWindow();
 
 public slots:
-    void readFile(std::list<Card>& list, QString fileName);
+    void readFile(std::vector<Card>& list, QString fileName);
 
 private slots:
     void on_actionOpenDatabase_triggered();
@@ -64,7 +64,7 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    std::list<Card> cardList{};
+    std::vector<Card> cardList{};
     QString filePath;
     int index;
 };

@@ -13,8 +13,6 @@
 #include <QMessageBox>
 #include <QInputDialog>
 
-// Naglowki dodatkowych funkcji
-
 void removeWhiteSpace(std::string& w);
 void showStatusBar();
 
@@ -70,7 +68,7 @@ int MainWindow::getIndex()
     return index;
 }
 
-void MainWindow::readFile(std::list<Card>& list, QString filePath) {
+void MainWindow::readFile(std::vector<Card>& list, QString filePath) {
     // Tworzymy domyślną bazę słówek
     // Uwaga: format rekordów w pliku to:
     // Haslo
