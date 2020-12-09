@@ -6,5 +6,6 @@
         <file>images/save.png</file>
         <file>images/trash.png</file>
         <file>images/session.png</file>
+        <file>images/addnewterm.png</file>
     </qresource>
 </RCC>

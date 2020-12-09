@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "Card.h"
+#include "addnewtermdialog.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -20,14 +21,19 @@ void showStatusBar();
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
+    , add(new AddNewTermDialog(this))
 {
     ui->setupUi(this);
 
     QString sessionFile("../FlashCards/Data/session.txt");
     if(QFileInfo::exists(sessionFile)) {
-        int ret = QMessageBox::information(this, "A saved session has been detected", "Do you want to load the last saved session?", QMessageBox::No, QMessageBox::Yes);
+        int ret = QMessageBox::information(this, "A saved session has been detected",
+                                           "Do you want to load the last saved session?",
+                                           QMessageBox::No, QMessageBox::Yes);
         if (ret == QMessageBox::Yes) {
             loadSession();
+            beginSet();
+            on_pushButtonStart_clicked();
         }
         else {
             // removing session file
@@ -41,13 +47,10 @@ MainWindow::MainWindow(QWidget *parent)
     else {
         filePath = "../FlashCards/Data/PLtoENG.txt";
         readFile(cardList, filePath);
+        beginSet();
     }
-    ui->labelShowTerm->setText("");
-    ui->groupBoxSummary->hide();
-    ui->pushButtonStartOver->setDisabled(true);
-    ui->pushButtonNext->hide();
-    ui->pushButtonAddNewTerm->setDisabled(true);
-    ui->groupBoxInput->hide();
+
+    connect(add, &AddNewTermDialog::createdNewTerm, this, &MainWindow::addCard);
 }
 
 void MainWindow::showStatusBar()
@@ -96,11 +99,13 @@ void MainWindow::readFile(std::vector<Card>& list, QString filePath) {
 
 MainWindow::~MainWindow()
 {
+    delete add;
     delete ui;
 }
 
 void MainWindow::on_actionOpenDatabase_triggered()
 {
+    checkEditStatus();
     QString fileName = QFileDialog::getOpenFileName(this,
         tr("Browse file"), "../FlashCards/Data", tr("Text files (*.txt)"));
     if(fileName != "") {
@@ -112,22 +117,7 @@ void MainWindow::on_actionOpenDatabase_triggered()
         ui->pushButtonStart->setDisabled(false);
         ui->pushButtonStartOver->setDisabled(true);
     }
-}
-
-void MainWindow::on_pushButtonAddNewTerm_clicked()
-{
-    std::string term{};
-    term = ui->lineEditInputTerm->text().toStdString();
-    std::string def{};
-    def = ui->lineEditInputDefinition->text().toStdString();
-    cardList.push_back(Card(term, def, 0));
-    this->showStatusBar();
-    ui->lineEditInputTerm->clear();
-    ui->lineEditInputDefinition->clear();
-    if(cardList.size() != 0) {
-        ui->pushButtonStart->setDisabled(false);
-    }
-    ui->pushButtonAddNewTerm->setDisabled(true);
+    beginSet();
 }
 
 void MainWindow::on_toolBarOpenDatabase_triggered()
@@ -158,27 +148,6 @@ void MainWindow::showSummary()
     ui->pushButtonNext->show();
     ui->labelUserAnswer->setText(answer);
     ui->labelCorrectMessage->setText(correctAnswer);
-    ui->labelUsersGrade->setText(QString::number(checkGrade(answer)));
-}
-
-void MainWindow::on_lineEditInputTerm_textEdited()
-{
-    if(ui->lineEditInputTerm->text() != "" && ui->lineEditInputDefinition->text().toStdString() != "") {
-        ui->pushButtonAddNewTerm->setDisabled(false);
-    }
-    else {
-        ui->pushButtonAddNewTerm->setDisabled(true);
-    }
-}
-
-void MainWindow::on_lineEditInputDefinition_textEdited()
-{
-    if(ui->lineEditInputTerm->text() != "" && ui->lineEditInputDefinition->text().toStdString() != "") {
-        ui->pushButtonAddNewTerm->setDisabled(false);
-    }
-    else {
-        ui->pushButtonAddNewTerm->setDisabled(true);
-    }
 }
 
 void removeWhiteSpace(std::string& w) {
@@ -234,22 +203,36 @@ void MainWindow::on_pushButtonStartOver_clicked()
 
 void MainWindow::on_actionExit_triggered()
 {
+    checkSessionStatus();
+    checkEditStatus();
     this->close();
 }
 
 void MainWindow::on_actionAddNewDatabase_triggered()
 {
+    checkEditStatus();
     QString path = QInputDialog::getText(this, "Create new data base", "Input flashcards database name");
-    path = "../FlashCards/Data/" + path + ".txt";
-    QFile file{path};
+    if (path != "") {
+        path = "../FlashCards/Data/" + path + ".txt";
+        QFile file{path};
 
-    if(file.open(QIODevice::WriteOnly | QIODevice::Text)){
-        QTextStream out(&file);
-        out << "";
-        file.close();
+        if(file.open(QIODevice::WriteOnly | QIODevice::Text)){
+            QTextStream out(&file);
+            out << "";
+            file.close();
+        }
+        filePath = path;
+        readFile(cardList, filePath);
+        editStatus = true;
+        on_actionAdd_new_terms_triggered();
+        beginSet();
     }
-    filePath = path;
-    readFile(cardList, filePath);
+
+}
+
+void MainWindow::on_toolBarAddNewDatabase_triggered()
+{
+    on_actionAddNewDatabase_triggered();
 }
 
 void MainWindow::on_actionSaveDatabase_triggered()
@@ -277,6 +260,7 @@ void MainWindow::on_actionDeleteTerm_triggered()
     cardList.erase(index);
     index += 1;
     on_pushButtonStart_clicked();
+    editStatus = true;
 }
 
 void MainWindow::on_toolBarDeleteTerm_triggered()
@@ -285,6 +269,7 @@ void MainWindow::on_toolBarDeleteTerm_triggered()
 }
 
 void MainWindow::loadSession() {
+    checkEditStatus();
     QFile file{"../FlashCards/Data/session.txt"};
 
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -300,6 +285,8 @@ void MainWindow::loadSession() {
         index = file.readLine().toInt();
     }
     file.close();
+    beginSet();
+
 }
 
 int MainWindow::checkGrade(QString answ)
@@ -362,3 +349,56 @@ void MainWindow::on_toolBarSaveSession_triggered()
 {
    on_actionSaveSession_triggered();
 }
+
+void MainWindow::addCard(Card& card){
+    cardList.push_back(card);
+    editStatus = true;
+    this->showStatusBar();
+};
+
+void MainWindow::on_actionAdd_new_terms_triggered()
+{   
+    add->setModal(true);
+    add->exec();
+    ui->pushButtonStart->setDisabled(false);
+}
+
+void MainWindow::on_toolBarAddNewTerms_triggered()
+{
+    on_actionAdd_new_terms_triggered();
+}
+
+void MainWindow::checkEditStatus() {
+    if(editStatus == true) {
+        int ret = QMessageBox::warning(this, "Warning!",
+                                           "You've made some changes to the current set. Do you want to save them?",
+                                           QMessageBox::No, QMessageBox::Yes);
+        if (ret == QMessageBox::Yes) {
+            on_actionSaveDatabase_triggered();
+        }
+     }
+}
+
+void MainWindow::checkSessionStatus() {
+    if(index > 0) {
+        int ret = QMessageBox::information(this, "",
+                                           "Do you want to save this session?",
+                                           QMessageBox::No, QMessageBox::Yes);
+        if (ret == QMessageBox::Yes) {
+            on_actionSaveSession_triggered();
+        }
+    }
+}
+
+void MainWindow::beginSet() {
+    ui->labelShowTerm->setText("");
+    ui->groupBoxSummary->hide();
+    ui->pushButtonStartOver->setDisabled(true);
+    if(cardList.size() == 0) {
+        ui->pushButtonStart->setDisabled(true);
+    }
+    ui->pushButtonNext->hide();
+    ui->groupBoxInput->hide();
+}
+
+
