@@ -17,6 +17,7 @@
 
 void removeWhiteSpace(std::string& w);
 void showStatusBar();
+void maybeSaved();
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -324,7 +325,6 @@ int MainWindow::checkGrade(QString answ)
         return 1;
     }
 
-
     if(grade <= 0)
         grade = 1;
 
@@ -368,26 +368,44 @@ void MainWindow::on_toolBarAddNewTerms_triggered()
     on_actionAdd_new_terms_triggered();
 }
 
-void MainWindow::checkEditStatus() {
+bool MainWindow::checkEditStatus() {
+    bool closeStatus{false};
     if(editStatus == true) {
         int ret = QMessageBox::warning(this, "Warning!",
                                            "You've made some changes to the current set. Do you want to save them?",
-                                           QMessageBox::No, QMessageBox::Yes);
+                                           QMessageBox::No, QMessageBox::Yes, QMessageBox::Cancel);
         if (ret == QMessageBox::Yes) {
             on_actionSaveDatabase_triggered();
+            closeStatus = true;
+        }
+        else if(ret == QMessageBox::No) {
+            closeStatus = true;
         }
      }
+    else {
+        closeStatus = true;
+    }
+    return closeStatus;
 }
 
-void MainWindow::checkSessionStatus() {
+bool MainWindow::checkSessionStatus() {
+    bool closeStatus{false};
     if(index > 0) {
         int ret = QMessageBox::information(this, "",
                                            "Do you want to save this session?",
-                                           QMessageBox::No, QMessageBox::Yes);
+                                           QMessageBox::No, QMessageBox::Yes, QMessageBox::Cancel);
         if (ret == QMessageBox::Yes) {
             on_actionSaveSession_triggered();
+            closeStatus = true;
+        }
+        else if(ret == QMessageBox::No) {
+            closeStatus = true;
         }
     }
+    else {
+        closeStatus = true;
+    }
+    return closeStatus;
 }
 
 void MainWindow::beginSet() {
@@ -400,5 +418,15 @@ void MainWindow::beginSet() {
     ui->pushButtonNext->hide();
     ui->groupBoxInput->hide();
 }
+
+void MainWindow::closeEvent(QCloseEvent *event) {
+    if(checkSessionStatus() == true && checkEditStatus() == true) {
+        event->accept();
+    }
+    else {
+        event->ignore();
+    }
+}
+
 
 

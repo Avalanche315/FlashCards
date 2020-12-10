@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QMainWindow>
+#include <QCloseEvent>
 #include "Card.h"
 #include "addnewtermdialog.h"
 
@@ -21,6 +22,8 @@ public:
     int checkGrade(QString answer);
     int getIndex();
     ~MainWindow();
+protected:
+    virtual void closeEvent(QCloseEvent *event) override;
 
 public slots:
     void readFile(std::vector<Card>& list, QString fileName);
@@ -53,8 +56,8 @@ private:
     QString filePath;
     bool editStatus{};
     int index;
-    void checkEditStatus();
-    void checkSessionStatus();
+    bool checkEditStatus();
+    bool checkSessionStatus();
     void beginSet();
 
 };
