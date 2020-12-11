@@ -15,12 +15,13 @@ class MainWindow : public QMainWindow
 
 public:
     MainWindow(QWidget *parent = nullptr);
-    Card returnCurrentItem();
+    Card returnCurrentItem() const;
     void showStatusBar();
     void showSummary();
     void loadSession();
-    int checkGrade(QString answer);
-    int getIndex();
+    bool checkGrade(QString& answer) const;
+    int getIndex() const;
+    int getPoints() const;
     ~MainWindow();
 protected:
     virtual void closeEvent(QCloseEvent *event) override;
@@ -56,8 +57,8 @@ private:
     QString filePath;
     bool editStatus{};
     int index;
+    int points{};
     bool checkEditStatus();
-    bool checkSessionStatus();
     void beginSet();
 
 };

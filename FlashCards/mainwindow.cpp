@@ -17,7 +17,6 @@
 
 void removeWhiteSpace(std::string& w);
 void showStatusBar();
-void maybeSaved();
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -46,10 +45,18 @@ MainWindow::MainWindow(QWidget *parent)
         }
     }
     else {
-        filePath = "../FlashCards/Data/PLtoENG.txt";
-        readFile(cardList, filePath);
-        beginSet();
+        int ret = QMessageBox::information(this, "",
+                                           "Do you want to load the default database?",
+                                           QMessageBox::No, QMessageBox::Yes);
+        if (ret == QMessageBox::Yes) {
+            filePath = "../FlashCards/Data/PLtoENG.txt";
+            readFile(cardList, filePath);
+        }
+        else {
+            on_actionOpenDatabase_triggered();
+        }
     }
+    beginSet();
 
     connect(add, &AddNewTermDialog::createdNewTerm, this, &MainWindow::addCard);
 }
@@ -59,14 +66,18 @@ void MainWindow::showStatusBar()
     ui->statusbar->showMessage("Total flashcards: " + QString::number(cardList.size()));
 }
 
-Card MainWindow::returnCurrentItem()
+Card MainWindow::returnCurrentItem() const
 {
   return cardList[index];
 }
 
-int MainWindow::getIndex()
+int MainWindow::getIndex() const
 {
     return index;
+}
+
+int MainWindow::getPoints() const {
+    return points;
 }
 
 void MainWindow::readFile(std::vector<Card>& list, QString filePath) {
@@ -108,7 +119,7 @@ void MainWindow::on_actionOpenDatabase_triggered()
 {
     checkEditStatus();
     QString fileName = QFileDialog::getOpenFileName(this,
-        tr("Browse file"), "../FlashCards/Data", tr("Text files (*.txt)"));
+        tr("Choose flashcard database"), "../FlashCards/Data", tr("Text files (*.txt)"));
     if(fileName != "") {
         filePath = fileName;
         readFile(cardList, fileName);
@@ -147,6 +158,13 @@ void MainWindow::showSummary()
     QString correctAnswer = QString(QString::fromStdString(currentCard.getDef()));
     ui->groupBoxSummary->show();
     ui->pushButtonNext->show();
+    if(checkGrade(answer)) {
+        ui->labelUserAnswer->setStyleSheet("QLabel {color: green;}");
+        ++points;
+    }
+    else {
+        ui->labelUserAnswer->setStyleSheet("QLabel {color: red;}");
+    }
     ui->labelUserAnswer->setText(answer);
     ui->labelCorrectMessage->setText(correctAnswer);
 }
@@ -204,9 +222,7 @@ void MainWindow::on_pushButtonStartOver_clicked()
 
 void MainWindow::on_actionExit_triggered()
 {
-    checkSessionStatus();
-    checkEditStatus();
-    this->close();
+    QWidget::close();
 }
 
 void MainWindow::on_actionAddNewDatabase_triggered()
@@ -257,11 +273,16 @@ void MainWindow::on_toolBarSaveDatabase_triggered()
 
 void MainWindow::on_actionDeleteTerm_triggered()
 {
-    auto index = cardList.begin() + getIndex();
-    cardList.erase(index);
-    index += 1;
-    on_pushButtonStart_clicked();
-    editStatus = true;
+    if(!cardList.empty()) {
+        if(!cardList.empty()) {
+            auto index = cardList.begin() + getIndex();
+            cardList.erase(index);
+            editStatus = true;
+        }
+        on_pushButtonStart_clicked();
+        on_pushButtonNext_clicked();
+        editStatus = true;
+    }
 }
 
 void MainWindow::on_toolBarDeleteTerm_triggered()
@@ -290,49 +311,15 @@ void MainWindow::loadSession() {
 
 }
 
-int MainWindow::checkGrade(QString answ)
+bool MainWindow::checkGrade(QString& answ) const
 {
-    int grade = 6;
-    Card item = returnCurrentItem();
-    char def[item.getDef().size()+1];
-    strcpy(def, item.getDef().c_str());
-    char answer[answ.size()+1];
-    strcpy(answer, answ.toStdString().c_str());
-
-    int counter = 0;
-
-    if(strlen(answer) > 0) {
-        if(strlen(def) >= strlen(answer)) {
-            for(int i = 0; i <= int(strlen(answer)); i++) {
-                if (def[i] != answer[i]) {
-                    grade--;
-                }
-                else
-                    counter++;
-            }
-        }
-        else {
-            for(int i = 0; i <= int(strlen(def)); i++) {
-                if (def[i] != answer[i]) {
-                    grade--;
-                }
-                else
-                    counter++;
-            }
-        }
-    }
-    else {
-        return 1;
-    }
-
-    if(grade <= 0)
-        grade = 1;
-
-    if(counter == 0)
-        return 1;
-
-    return grade;
-
+    std::string answer = answ.toStdString();
+    removeWhiteSpace(answer);
+    Card current = returnCurrentItem();
+    std::string correct = current.getDef();
+    removeWhiteSpace(correct);
+    if(answer == correct) return true;
+    return false;
 };
 
 void MainWindow::on_actionSaveSession_triggered()
@@ -369,46 +356,28 @@ void MainWindow::on_toolBarAddNewTerms_triggered()
 }
 
 bool MainWindow::checkEditStatus() {
-    bool closeStatus{false};
+    // 1 - quit
+    // 0 - do not quit
     if(editStatus == true) {
         int ret = QMessageBox::warning(this, "Warning!",
-                                           "You've made some changes to the current set. Do you want to save them?",
+                                           "You've edited the current set. Do you want to save it?",
                                            QMessageBox::No, QMessageBox::Yes, QMessageBox::Cancel);
         if (ret == QMessageBox::Yes) {
             on_actionSaveDatabase_triggered();
-            closeStatus = true;
+            return 1;
         }
-        else if(ret == QMessageBox::No) {
-            closeStatus = true;
+        else if (ret == QMessageBox::No) {
+            return 1;
         }
-     }
-    else {
-        closeStatus = true;
-    }
-    return closeStatus;
-}
-
-bool MainWindow::checkSessionStatus() {
-    bool closeStatus{false};
-    if(index > 0) {
-        int ret = QMessageBox::information(this, "",
-                                           "Do you want to save this session?",
-                                           QMessageBox::No, QMessageBox::Yes, QMessageBox::Cancel);
-        if (ret == QMessageBox::Yes) {
-            on_actionSaveSession_triggered();
-            closeStatus = true;
-        }
-        else if(ret == QMessageBox::No) {
-            closeStatus = true;
+        else if (ret == QMessageBox::Cancel) {
+            return 0;
         }
     }
-    else {
-        closeStatus = true;
-    }
-    return closeStatus;
+    return 1;
 }
 
 void MainWindow::beginSet() {
+    points = 0;
     ui->labelShowTerm->setText("");
     ui->groupBoxSummary->hide();
     ui->pushButtonStartOver->setDisabled(true);
@@ -420,7 +389,7 @@ void MainWindow::beginSet() {
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
-    if(checkSessionStatus() == true && checkEditStatus() == true) {
+    if (checkEditStatus()) {
         event->accept();
     }
     else {
