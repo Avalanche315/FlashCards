@@ -5,7 +5,7 @@ slimy
 tuńczyk biały
 albacore
 barwena
-ed mullet
+red mullet
 wróżenie
 divination
 rosa
@@ -28,7 +28,8 @@ placki ziemniaczane
 hash browns
 gumowy, gumowaty
 rubbery
-chmiel	hops
+chmiel
+hops
 podchmielony, wstawiony
 tipsy
 sylop klonowy

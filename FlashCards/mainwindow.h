@@ -4,6 +4,7 @@
 #include <QCloseEvent>
 #include "Card.h"
 #include "addnewtermdialog.h"
+#include "setsummarydialog.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -27,6 +28,9 @@ public:
 protected:
     virtual void closeEvent(QCloseEvent *event) override;
 
+signals:
+    void setEnded(int points, int totalPoints);
+
 public slots:
     void readFile(std::vector<Card>& list, QString fileName);
 
@@ -37,7 +41,7 @@ private slots:
     void on_pushButtonStart_clicked();
     void on_pushButtonNext_clicked();
     void on_lineEditInputAnswer_returnPressed();
-    void on_pushButtonStartOver_clicked();
+    void on_pushButtonRestart_clicked();
     void on_actionExit_triggered();
     void on_actionAddNewDatabase_triggered();
     void on_actionSaveDatabase_triggered();
@@ -52,6 +56,7 @@ private slots:
 private:
     Ui::MainWindow *ui;
     AddNewTermDialog* add;
+    SetSummaryDialog* score;
     std::vector<Card> cardList{};
     QString filePath;
     bool editStatus{};
@@ -59,5 +64,4 @@ private:
     int points{};
     bool checkEditStatus();
     void beginSet();
-
 };

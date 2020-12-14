@@ -22,13 +22,14 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , add(new AddNewTermDialog(this))
+    , score(new SetSummaryDialog(this))
 {
     ui->setupUi(this);
 
     QString sessionFile("../FlashCards/Data/session.txt");
     if(QFileInfo::exists(sessionFile)) {
         int ret = QMessageBox::information(this, "A saved session has been detected",
-                                           "Do you want to load the last saved session?",
+                                           "Do you want to load saved session?",
                                            QMessageBox::No, QMessageBox::Yes);
         if (ret == QMessageBox::Yes) {
             loadSession();
@@ -57,6 +58,7 @@ MainWindow::MainWindow(QWidget *parent)
     beginSet();
 
     connect(add, &AddNewTermDialog::createdNewTerm, this, &MainWindow::addCard);
+    connect(this, &MainWindow::setEnded, score, &SetSummaryDialog::showScore);
 }
 
 void MainWindow::showStatusBar()
@@ -95,8 +97,7 @@ void MainWindow::readFile(std::vector<Card>& list, QString filePath) {
         removeWhiteSpace(term);
         std::string def = file.readLine().toStdString();
         removeWhiteSpace(def);
-        long long int points = 0;
-        list.push_back(Card(term, def, points));
+        list.push_back(Card(term, def));
     }
 
     file.close();
@@ -125,7 +126,7 @@ void MainWindow::on_actionOpenDatabase_triggered()
         ui->groupBoxInput->hide();
         ui->groupBoxSummary->hide();
         ui->pushButtonStart->setDisabled(false);
-        ui->pushButtonStartOver->setDisabled(true);
+        ui->pushButtonRestart->setDisabled(true);
     }
     beginSet();
 }
@@ -137,16 +138,20 @@ void MainWindow::on_toolBarOpenDatabase_triggered()
 
 void MainWindow::on_pushButtonShowAnswer_clicked()
 {
-    if(index < int(cardList.size()-1)) {
+    if(index < static_cast<int>(cardList.size()-1)) {
        ui->pushButtonNext->setDisabled(false);
+       showSummary();
     }
-    else {
+    else { // if set is ended
+        showSummary();
         ui->pushButtonNext->setDisabled(true);
-        ui->pushButtonStartOver->setDisabled(false);
+        emit setEnded(points, cardList.size());
+        score->setModal(true);
+        score->exec();
     }
-    showSummary();
     ui->pushButtonShowAnswer->setDisabled(true);
     ui->lineEditInputAnswer->setDisabled(true);
+
 }
 
 void MainWindow::showSummary()
@@ -185,7 +190,7 @@ void MainWindow::on_pushButtonStart_clicked()
     ui->pushButtonShowAnswer->setDisabled(false);
     ui->labelShowTerm->show();
     ui->groupBoxInput->show();
-    ui->pushButtonStartOver->setDisabled(false);
+    ui->pushButtonRestart->setDisabled(false);
     this->showStatusBar();
 }
 
@@ -196,7 +201,7 @@ void MainWindow::on_pushButtonNext_clicked()
     ui->lineEditInputAnswer->setDisabled(false);
     ui->pushButtonShowAnswer->setDisabled(false);
     ui->pushButtonNext->hide();
-    this->index++;
+    index++;
     on_pushButtonStart_clicked();
 }
 
@@ -207,10 +212,11 @@ void MainWindow::on_lineEditInputAnswer_returnPressed()
     }
 }
 
-void MainWindow::on_pushButtonStartOver_clicked()
+void MainWindow::on_pushButtonRestart_clicked()
 {
-    ui->pushButtonStartOver->setDisabled(true);
+    ui->pushButtonRestart->setDisabled(true);
     index = 0;
+    points = 0;
     on_pushButtonStart_clicked();
     ui->groupBoxSummary->hide();
     ui->lineEditInputAnswer->clear();
@@ -363,7 +369,7 @@ void MainWindow::beginSet() {
     points = 0;
     ui->labelShowTerm->setText("");
     ui->groupBoxSummary->hide();
-    ui->pushButtonStartOver->setDisabled(true);
+    ui->pushButtonRestart->setDisabled(true);
     if(cardList.size() == 0) {
         ui->pushButtonStart->setDisabled(true);
     }

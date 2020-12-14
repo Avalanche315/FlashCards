@@ -19,16 +19,20 @@ SOURCES += \
     addnewtermdialog.cpp \
     card.cpp \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    setsummarydialog.cpp
 
 HEADERS += \
+    Card.h \
     addnewtermdialog.h \
     card.h \
-    mainwindow.h
+    mainwindow.h \
+    setsummarydialog.h
 
 FORMS += \
     addnewtermdialog.ui \
-    mainwindow.ui
+    mainwindow.ui \
+    setsummarydialog.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

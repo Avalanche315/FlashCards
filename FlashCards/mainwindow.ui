@@ -51,7 +51,7 @@
      <string>Start</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButtonStartOver">
+   <widget class="QPushButton" name="pushButtonRestart">
     <property name="enabled">
      <bool>true</bool>
     </property>

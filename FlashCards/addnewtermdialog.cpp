@@ -20,7 +20,7 @@ void AddNewTermDialog::on_pushButtonAddNewTerm_clicked()
     term = ui->lineEditInputTerm->text().toStdString();
     std::string def{};
     def = ui->lineEditInputDefinition->text().toStdString();
-    Card card{term, def, 0};
+    Card card{term, def};
     ui->lineEditInputTerm->clear();
     ui->lineEditInputDefinition->clear();
     ui->pushButtonAddNewTerm->setDisabled(true);

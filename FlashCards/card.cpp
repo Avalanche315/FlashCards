@@ -9,8 +9,3 @@ std::string Card::getDef() {
 std::string Card::getTerm() {
   return term;
 }
-
-int Card::getPoints() {
-  return points;
-}
-
