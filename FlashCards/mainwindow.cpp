@@ -32,8 +32,6 @@ MainWindow::MainWindow(QWidget *parent)
                                            QMessageBox::No, QMessageBox::Yes);
         if (ret == QMessageBox::Yes) {
             loadSession();
-            beginSet();
-            on_pushButtonStart_clicked();
         }
         else {
             // removing session file
@@ -305,10 +303,9 @@ void MainWindow::loadSession() {
         QString name = QString::fromStdString(fileName);
         readFile(cardList, name);
         index = file.readLine().toInt();
+        beginSet();
     }
     file.close();
-    beginSet();
-
 }
 
 bool MainWindow::checkGrade(QString& answ) const
@@ -321,21 +318,6 @@ bool MainWindow::checkGrade(QString& answ) const
     if(answer == correct) return true;
     return false;
 };
-
-void MainWindow::on_actionSaveSession_triggered()
-{
-    QFile file{"../FlashCards/Data/session.txt"};
-    if(file.open(QIODevice::WriteOnly | QIODevice::Text)){
-        QTextStream out(&file);
-        out << filePath << "\n" << index << "\n";
-        file.close();
-    }
-}
-
-void MainWindow::on_toolBarSaveSession_triggered()
-{
-   on_actionSaveSession_triggered();
-}
 
 void MainWindow::addCard(Card& card){
     cardList.push_back(card);
@@ -364,6 +346,7 @@ bool MainWindow::checkEditStatus() {
                                            QMessageBox::No, QMessageBox::Yes, QMessageBox::Cancel);
         if (ret == QMessageBox::Yes) {
             on_actionSaveDatabase_triggered();
+            if(index > 1)
             return 1;
         }
         else if (ret == QMessageBox::No) {
@@ -390,10 +373,22 @@ void MainWindow::beginSet() {
 
 void MainWindow::closeEvent(QCloseEvent *event) {
     if (checkEditStatus()) {
+        saveSession();
         event->accept();
     }
     else {
         event->ignore();
+    }
+}
+
+void MainWindow::saveSession() {
+    if(index > 1) {
+        QFile file{"../FlashCards/Data/session.txt"};
+        if(file.open(QIODevice::WriteOnly | QIODevice::Text)){
+            QTextStream out(&file);
+            out << filePath << "\n" << index << "\n";
+            file.close();
+        }
     }
 }
 

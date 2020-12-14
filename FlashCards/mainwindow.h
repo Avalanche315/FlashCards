@@ -19,6 +19,7 @@ public:
     void showStatusBar();
     void showSummary();
     void loadSession();
+    void saveSession();
     bool checkGrade(QString& answer) const;
     int getIndex() const;
     int getPoints() const;
@@ -42,9 +43,7 @@ private slots:
     void on_actionSaveDatabase_triggered();
     void on_toolBarSaveDatabase_triggered();
     void on_actionDeleteTerm_triggered();
-    void on_toolBarDeleteTerm_triggered();
-    void on_actionSaveSession_triggered();
-    void on_toolBarSaveSession_triggered();
+    void on_toolBarDeleteTerm_triggered();;
     void on_actionAdd_new_terms_triggered();
     void on_toolBarAddNewTerms_triggered();
     void on_toolBarAddNewDatabase_triggered();
