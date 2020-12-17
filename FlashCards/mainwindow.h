@@ -52,8 +52,6 @@ private slots:
     void on_toolBarAddNewDatabase_triggered();
     void addCard(Card& card);
 
-    void on_pushButtonNext_pressed();
-
 private:
     Ui::MainWindow *ui;
     AddNewTermDialog* add;
