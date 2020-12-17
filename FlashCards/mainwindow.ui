@@ -221,6 +221,9 @@
          <property name="text">
           <string>Next</string>
          </property>
+         <property name="default">
+          <bool>true</bool>
+         </property>
         </widget>
        </item>
       </layout>
@@ -287,6 +290,9 @@
          </property>
          <property name="text">
           <string>Show answer</string>
+         </property>
+         <property name="default">
+          <bool>true</bool>
          </property>
         </widget>
        </item>

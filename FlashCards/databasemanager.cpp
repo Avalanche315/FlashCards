@@ -1,5 +1,6 @@
 #include "databasemanager.h"
 #include "sessionmanager.h"
+#include "cardmanager.h"
 #include <QFileDialog>
 #include <QFile>
 #include <QTextStream>
@@ -17,7 +18,7 @@ bool DataBaseManager::openDatabase() {
     if(fileName != "") {
         window->filePath = fileName;
         SessionManager manager{window};
-        manager.readFile(window->cardList, fileName);
+        manager.readFile(window->cardList->getList(), fileName);
         return true;
     }
    return false;
@@ -36,7 +37,7 @@ bool DataBaseManager::addNewDatabase() {
         }
         window->filePath = path;
         SessionManager manager{window};
-        manager.readFile(window->cardList, window->filePath);
+        manager.readFile(window->cardList->getList(), window->filePath);
         window->editStatus = true;
         window->on_actionAdd_new_terms_triggered();
         return true;
@@ -48,7 +49,7 @@ void DataBaseManager::saveDatabase() {
     QFile file{window->filePath};
     if(file.open(QIODevice::WriteOnly | QIODevice::Text)){
         QTextStream out(&file);
-        for(auto& it : window->cardList) {
+        for(auto& it : window->cardList->getList()) {
             QString term = QString::fromStdString(it.getTerm());
             QString def = QString::fromStdString(it.getDef());
             out << term << "\n" << def << "\n";

@@ -5,6 +5,7 @@
 #include "Card.h"
 #include "addnewtermdialog.h"
 #include "setsummarydialog.h"
+#include "cardmanager.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -17,7 +18,6 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     Card returnCurrentItem() const;
-    void showStatusBar();
     void showSummary();
     bool checkGrade(QString& answer) const;
     int getIndex() const;
@@ -31,7 +31,7 @@ signals:
 
 public slots:
     void deactivateStartButton();
-    void beginSet();
+    void beginSet(int index = 0);
 
 private slots:
     void on_actionOpenDatabase_triggered();
@@ -52,16 +52,17 @@ private slots:
     void on_toolBarAddNewDatabase_triggered();
     void addCard(Card& card);
 
+    void on_pushButtonNext_pressed();
+
 private:
     Ui::MainWindow *ui;
     AddNewTermDialog* add;
     SetSummaryDialog* score;
-    std::vector<Card> cardList{};
+    CardManager* cardList;
     QString filePath;
     bool editStatus{};
-    int index;
-    int points{};
     bool checkEditStatus();
+    void showStatusBar();
     friend class SessionManager;
     friend class DataBaseManager;
 };
