@@ -1,5 +1,4 @@
-#ifndef SETSUMMARYDIALOG_H
-#define SETSUMMARYDIALOG_H
+#pragma once
 
 #include <QDialog>
 
@@ -21,5 +20,3 @@ public slots:
 private:
     Ui::SetSummaryDialog *ui;
 };
-
-#endif // SETSUMMARYDIALOG_H

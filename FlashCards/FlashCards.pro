@@ -16,17 +16,23 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    additionalfunctions.cpp \
     addnewtermdialog.cpp \
     card.cpp \
+    databasemanager.cpp \
     main.cpp \
     mainwindow.cpp \
+    sessionmanager.cpp \
     setsummarydialog.cpp
 
 HEADERS += \
     Card.h \
+    additionalfunctions.h \
     addnewtermdialog.h \
     card.h \
+    databasemanager.h \
     mainwindow.h \
+    sessionmanager.h \
     setsummarydialog.h
 
 FORMS += \

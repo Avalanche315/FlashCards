@@ -29,7 +29,9 @@ void AddNewTermDialog::on_pushButtonAddNewTerm_clicked()
 
 void AddNewTermDialog::on_lineEditInputTerm_textEdited()
 {
-    if(ui->lineEditInputTerm->text() != "" && ui->lineEditInputDefinition->text().toStdString() != "") {
+    std::string term = ui->lineEditInputTerm->text().toStdString();
+    std::string definition = ui->lineEditInputDefinition->text().toStdString();
+    if(term != "" &&  definition != "") {
         ui->pushButtonAddNewTerm->setDisabled(false);
     }
     else {

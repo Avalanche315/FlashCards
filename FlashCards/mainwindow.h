@@ -19,8 +19,6 @@ public:
     Card returnCurrentItem() const;
     void showStatusBar();
     void showSummary();
-    void loadSession();
-    void saveSession();
     bool checkGrade(QString& answer) const;
     int getIndex() const;
     int getPoints() const;
@@ -32,7 +30,8 @@ signals:
     void setEnded(int points, int totalPoints);
 
 public slots:
-    void readFile(std::vector<Card>& list, QString fileName);
+    void deactivateStartButton();
+    void beginSet();
 
 private slots:
     void on_actionOpenDatabase_triggered();
@@ -63,5 +62,6 @@ private:
     int index;
     int points{};
     bool checkEditStatus();
-    void beginSet();
+    friend class SessionManager;
+    friend class DataBaseManager;
 };

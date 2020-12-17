@@ -2,6 +2,9 @@
 #include "ui_mainwindow.h"
 #include "Card.h"
 #include "addnewtermdialog.h"
+#include "additionalfunctions.h"
+#include "sessionmanager.h"
+#include "databasemanager.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -15,7 +18,6 @@
 #include <QMessageBox>
 #include <QInputDialog>
 
-void removeWhiteSpace(std::string& w);
 void showStatusBar();
 
 MainWindow::MainWindow(QWidget *parent)
@@ -26,39 +28,30 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    QString sessionFile("../FlashCards/Data/session.txt");
-    if(QFileInfo::exists(sessionFile)) {
-        int ret = QMessageBox::information(this, "A saved session has been detected",
-                                           "Do you want to load saved session?",
-                                           QMessageBox::No, QMessageBox::Yes);
-        if (ret == QMessageBox::Yes) {
-            loadSession();
-        }
-        else {
-            // removing session file
-            QFile sFile(sessionFile);
-            sFile.remove();
-            // establish default database
-            filePath = "../FlashCards/Data/PLtoENG.txt";
-            readFile(cardList, filePath);
-        }
-    }
-    else {
-        int ret = QMessageBox::information(this, "",
-                                           "Do you want to load the default database?",
-                                           QMessageBox::No, QMessageBox::Yes);
-        if (ret == QMessageBox::Yes) {
-            filePath = "../FlashCards/Data/PLtoENG.txt";
-            readFile(cardList, filePath);
-        }
-        else {
-            on_actionOpenDatabase_triggered();
-        }
-    }
-    beginSet();
+    SessionManager sessionManager{this};
+    sessionManager.establishBasicSet();
 
     connect(add, &AddNewTermDialog::createdNewTerm, this, &MainWindow::addCard);
     connect(this, &MainWindow::setEnded, score, &SetSummaryDialog::showScore);
+}
+
+void MainWindow::deactivateStartButton() {
+    ui->pushButtonStart->setDisabled(true);
+}
+
+void MainWindow::beginSet() {
+    points = 0;
+    ui->labelShowTerm->setText("");
+    ui->groupBoxSummary->hide();
+    ui->pushButtonRestart->setDisabled(true);
+    if(cardList.size() == 0) {
+        ui->pushButtonStart->setDisabled(true);
+    }
+    else {
+        ui->pushButtonStart->setDisabled(false);
+    }
+    ui->pushButtonNext->hide();
+    ui->groupBoxInput->hide();
 }
 
 void MainWindow::showStatusBar()
@@ -80,55 +73,23 @@ int MainWindow::getPoints() const {
     return points;
 }
 
-void MainWindow::readFile(std::vector<Card>& list, QString filePath) {
-    list.clear();
-
-    index = 0;
-
-    QFile file{filePath};
-
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qDebug() << "Error with loading the file: " << file.errorString();
-        return;
-    }
-
-    while (!file.atEnd()) {
-        std::string term = file.readLine().toStdString();
-        removeWhiteSpace(term);
-        std::string def = file.readLine().toStdString();
-        removeWhiteSpace(def);
-        list.push_back(Card(term, def));
-    }
-
-    file.close();
-
-    this->showStatusBar();
-    if(cardList.size() == 0) {
-        ui->pushButtonStart->setDisabled(true);
-    }
-}
-
 MainWindow::~MainWindow()
 {
     delete add;
     delete ui;
+    delete score;
 }
 
 void MainWindow::on_actionOpenDatabase_triggered()
 {
-    checkEditStatus();
-    QString fileName = QFileDialog::getOpenFileName(this,
-        tr("Choose flashcard database"), "../FlashCards/Data", tr("Text files (*.txt)"));
-    if(fileName != "") {
-        filePath = fileName;
-        readFile(cardList, fileName);
-        ui->labelShowTerm->hide();
-        ui->groupBoxInput->hide();
-        ui->groupBoxSummary->hide();
-        ui->pushButtonStart->setDisabled(false);
-        ui->pushButtonRestart->setDisabled(true);
+    SessionManager sessionManager(this);
+    sessionManager.checkEditStatus();
+    DataBaseManager databaseManager(this);
+    bool status = databaseManager.openDatabase();
+    if(status) {
+        qDebug() << "openinng database :)";
+        beginSet();
     }
-    beginSet();
 }
 
 void MainWindow::on_toolBarOpenDatabase_triggered()
@@ -170,12 +131,6 @@ void MainWindow::showSummary()
     }
     ui->labelUserAnswer->setText(answer);
     ui->labelCorrectMessage->setText(correctAnswer);
-}
-
-void removeWhiteSpace(std::string& w) {
-    if(w.size() != 0) {
-        w.replace(w.end() - 1, w.end(), "");
-    }
 }
 
 void MainWindow::on_pushButtonStart_clicked()
@@ -231,24 +186,11 @@ void MainWindow::on_actionExit_triggered()
 
 void MainWindow::on_actionAddNewDatabase_triggered()
 {
-    checkEditStatus();
-    QString path = QInputDialog::getText(this, "Create new data base", "Input flashcards database name");
-    if (path != "") {
-        path = "../FlashCards/Data/" + path + ".txt";
-        QFile file{path};
-
-        if(file.open(QIODevice::WriteOnly | QIODevice::Text)){
-            QTextStream out(&file);
-            out << "";
-            file.close();
-        }
-        filePath = path;
-        readFile(cardList, filePath);
-        editStatus = true;
-        on_actionAdd_new_terms_triggered();
-        beginSet();
-    }
-
+    SessionManager sessionManager(this);
+    sessionManager.checkEditStatus();
+    DataBaseManager manager(this);
+    bool status = manager.addNewDatabase();
+    if(status) beginSet();
 }
 
 void MainWindow::on_toolBarAddNewDatabase_triggered()
@@ -258,16 +200,8 @@ void MainWindow::on_toolBarAddNewDatabase_triggered()
 
 void MainWindow::on_actionSaveDatabase_triggered()
 {
-    QFile file{filePath};
-    if(file.open(QIODevice::WriteOnly | QIODevice::Text)){
-        QTextStream out(&file);
-        for(auto& it : cardList) {
-            QString term = QString::fromStdString(it.getTerm());
-            QString def = QString::fromStdString(it.getDef());
-            out << term << "\n" << def << "\n";
-        }
-        file.close();
-    }
+    DataBaseManager manager(this);
+    manager.saveDatabase();
 }
 
 void MainWindow::on_toolBarSaveDatabase_triggered()
@@ -294,33 +228,13 @@ void MainWindow::on_toolBarDeleteTerm_triggered()
     on_actionDeleteTerm_triggered();
 }
 
-void MainWindow::loadSession() {
-    checkEditStatus();
-    QFile file{"../FlashCards/Data/session.txt"};
-
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qDebug() << "Error with loading the file: " << file.errorString();
-        return;
-    }
-    else {
-        std::string fileName = file.readLine().toStdString();
-        removeWhiteSpace(fileName);
-        filePath = QString::fromStdString(fileName);
-        QString name = QString::fromStdString(fileName);
-        readFile(cardList, name);
-        index = file.readLine().toInt();
-        beginSet();
-    }
-    file.close();
-}
-
 bool MainWindow::checkGrade(QString& answ) const
 {
     std::string answer = answ.toStdString();
-    removeWhiteSpace(answer);
+    AdditionalFunctions::removeWhiteSpace(answer);
     Card current = returnCurrentItem();
     std::string correct = current.getDef();
-    removeWhiteSpace(correct);
+    AdditionalFunctions::removeWhiteSpace(correct);
     if(answer == correct) return true;
     return false;
 };
@@ -343,60 +257,14 @@ void MainWindow::on_toolBarAddNewTerms_triggered()
     on_actionAdd_new_terms_triggered();
 }
 
-bool MainWindow::checkEditStatus() {
-    // 1 - quit
-    // 0 - do not quit
-    if(editStatus == true) {
-        int ret = QMessageBox::warning(this, "Warning!",
-                                           "You've edited the current set. Do you want to save it?",
-                                           QMessageBox::No, QMessageBox::Yes, QMessageBox::Cancel);
-        if (ret == QMessageBox::Yes) {
-            on_actionSaveDatabase_triggered();
-            if(index > 1)
-            return 1;
-        }
-        else if (ret == QMessageBox::No) {
-            return 1;
-        }
-        else if (ret == QMessageBox::Cancel) {
-            return 0;
-        }
-    }
-    return 1;
-}
-
-void MainWindow::beginSet() {
-    points = 0;
-    ui->labelShowTerm->setText("");
-    ui->groupBoxSummary->hide();
-    ui->pushButtonRestart->setDisabled(true);
-    if(cardList.size() == 0) {
-        ui->pushButtonStart->setDisabled(true);
-    }
-    ui->pushButtonNext->hide();
-    ui->groupBoxInput->hide();
-}
-
 void MainWindow::closeEvent(QCloseEvent *event) {
-    if (checkEditStatus()) {
-        saveSession();
+    SessionManager sessionManager(this);
+    if (sessionManager.checkEditStatus()) {
+        SessionManager manager(this);
+        manager.saveSession();
         event->accept();
     }
     else {
         event->ignore();
     }
 }
-
-void MainWindow::saveSession() {
-    if(index > 1) {
-        QFile file{"../FlashCards/Data/session.txt"};
-        if(file.open(QIODevice::WriteOnly | QIODevice::Text)){
-            QTextStream out(&file);
-            out << filePath << "\n" << index << "\n";
-            file.close();
-        }
-    }
-}
-
-
-
