@@ -19,6 +19,7 @@ SOURCES += \
     additionalfunctions.cpp \
     addnewtermdialog.cpp \
     card.cpp \
+    cardmanager.cpp \
     databasemanager.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -30,6 +31,7 @@ HEADERS += \
     additionalfunctions.h \
     addnewtermdialog.h \
     card.h \
+    cardmanager.h \
     databasemanager.h \
     mainwindow.h \
     sessionmanager.h \
@@ -49,3 +51,7 @@ DISTFILES +=
 
 RESOURCES += \
     icons.qrc
+
+RC_ICONS = flashcards.ico
+ICON = flashcards.ico
+
