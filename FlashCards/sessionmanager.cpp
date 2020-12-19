@@ -47,6 +47,7 @@ void SessionManager::establishBasicSet() {
             // establish default database
             window->filePath = "../FlashCards/Data/PLtoENG.txt";
             readFile(window->cardList->getList(), window->filePath);
+            window->beginSet();
         }
     }
     else {
