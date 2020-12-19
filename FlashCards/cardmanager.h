@@ -19,6 +19,7 @@ public:
     bool empty() const;
     void push_back(Card& card);
     bool deleteCard();
+    bool isLastElement();
 private:
     std::vector<Card> cardList{};
     int index;

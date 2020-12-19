@@ -51,6 +51,13 @@ void CardManager::push_back(Card& card) {
     cardList.push_back(card);
 }
 
+bool CardManager::isLastElement() {
+    if(static_cast<int>(cardList.size() - 1) == index) {
+        return true;
+    }
+    return false;
+}
+
 bool CardManager::deleteCard() {
     bool editStatus = false;
     if(!cardList.empty()) {

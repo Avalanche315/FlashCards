@@ -52,7 +52,12 @@ void DataBaseManager::saveDatabase() {
         for(auto& it : window->cardList->getList()) {
             QString term = QString::fromStdString(it.getTerm());
             QString def = QString::fromStdString(it.getDef());
-            out << term << "\n" << def << "\n";
+            if(!window->cardList->isLastElement()) {
+                out << term << "\n" << def << "\n";
+            }
+            else {
+                out << term << "\n" << def;
+            }
         }
         file.close();
     }
