@@ -13,7 +13,7 @@ public:
     void setIndex(int index);
     int getPoints() const;
     void increasePoints();
-    void setPoints(int index);
+    void setPoints(int points);
     int size() const;
     std::vector<Card>& getList();
     bool empty() const;
@@ -22,8 +22,8 @@ public:
     bool isLastElement();
 private:
     std::vector<Card> cardList{};
-    int index;
-    int points;
+    int index{};
+    int points{};
 };
 
 

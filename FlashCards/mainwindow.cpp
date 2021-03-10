@@ -42,6 +42,7 @@ void MainWindow::beginSet(int index) {
     ui->labelShowTerm->setText("");
     ui->groupBoxSummary->hide();
     cardList->setIndex(index);
+
     ui->pushButtonRestart->setDisabled(true);
     if(cardList->size() == 0) {
         ui->pushButtonStart->setDisabled(true);
@@ -89,9 +90,9 @@ void MainWindow::on_pushButtonShowAnswer_clicked()
        showSummary();
     }
     else { // if set is ended
+        emit setEnded(cardList->getPoints(), cardList->size());
         showSummary();
         ui->pushButtonNext->setDisabled(true);
-        emit setEnded(cardList->getPoints(), cardList->size());
         score->setModal(true);
         score->exec();
     }

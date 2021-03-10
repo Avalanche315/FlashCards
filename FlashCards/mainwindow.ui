@@ -31,6 +31,10 @@
   <property name="windowTitle">
    <string>FlashCards @ 2020</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="icons.qrc">
+    <normaloff>:/images/flashcards.ico</normaloff>:/images/flashcards.ico</iconset>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QPushButton" name="pushButtonStart">
     <property name="geometry">

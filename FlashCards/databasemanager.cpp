@@ -49,15 +49,18 @@ void DataBaseManager::saveDatabase() {
     QFile file{window->filePath};
     if(file.open(QIODevice::WriteOnly | QIODevice::Text)){
         QTextStream out(&file);
-        for(auto& it : window->cardList->getList()) {
-            QString term = QString::fromStdString(it.getTerm());
-            QString def = QString::fromStdString(it.getDef());
-            if(!window->cardList->isLastElement()) {
-                out << term << "\n" << def << "\n";
-            }
-            else {
-                out << term << "\n" << def;
-            }
+        auto& allCards = window->cardList->getList();
+
+        QString term = QString::fromStdString(allCards[0].getTerm());
+        QString def = QString::fromStdString(allCards[0].getDef());
+
+        out << term << "\n" << def;
+
+        for(auto i = 1; i < allCards.size(); i++) {
+            QString term = QString::fromStdString(allCards[i].getTerm());
+            QString def = QString::fromStdString(allCards[i].getDef());
+
+            out << "\n" << term << "\n" << def;
         }
         file.close();
     }

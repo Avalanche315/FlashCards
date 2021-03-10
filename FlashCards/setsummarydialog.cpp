@@ -10,7 +10,7 @@ SetSummaryDialog::SetSummaryDialog(QWidget *parent) :
 }
 
 void SetSummaryDialog::showScore(int scoredPoints, int totalPoints) {
-    double score = scoredPoints / totalPoints * 100;
+    int score = scoredPoints / static_cast<double>(totalPoints) * 100;
     ui->showScoreLabel->setText("Correct answers: " + QString::number(scoredPoints) + "/" + QString::number(totalPoints)
                          + " (" + QString::number(score) + "%)");
 }
