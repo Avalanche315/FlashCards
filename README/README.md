@@ -29,7 +29,7 @@ Question-answer pairs can be added or deleted from the set:
 
 Summary (at the end of the set):
 
-![Adding new term](./README/images/summary.png)
+![Summary](./README/images/summary.png)
 
 Session can be saved before the program closes and it can be continued next time user open the app: 
 
